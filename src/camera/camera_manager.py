@@ -49,8 +49,11 @@ class CameraManager:
         if self.capture is not None and self.capture.isOpened():
             return True
 
-        # Open the camera
-        self.capture = cv2.VideoCapture(self.camera_index)
+        # Open the camera using DirectShow backend (better on Windows)
+        self.capture = cv2.VideoCapture(
+            self.camera_index,
+            cv2.CAP_DSHOW
+        )
 
         # Check if camera opened successfully
         if not self.capture.isOpened():
@@ -58,6 +61,9 @@ class CameraManager:
             raise RuntimeError(
                 f"Failed to open camera (Index: {self.camera_index})."
             )
+
+        # Reduce frame buffering (helps prevent frozen frames)
+        self.capture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         # Set camera resolution if specified
         if self.width is not None:
