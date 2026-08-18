@@ -17,10 +17,13 @@ class FaceMeshDetector:
         max_num_faces: int = 1,
         min_detection_confidence: float = 0.5,
         min_tracking_confidence: float = 0.5,
+        draw_landmarks: bool = False,
     ) -> None:
 
         self.mp_face_mesh = mp.solutions.face_mesh
         self.mp_drawing = mp.solutions.drawing_utils
+        self.draw_landmarks = draw_landmarks
+
         self.drawing_spec = self.mp_drawing.DrawingSpec(
             thickness=1,
             circle_radius=1,
@@ -37,16 +40,26 @@ class FaceMeshDetector:
     def detect_landmarks(
         self,
         frame: np.ndarray,
-    ) -> tuple[np.ndarray, Optional[list]]:
+        rgb_frame: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, list | None]:
+        """Detect facial landmarks.
 
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        Args:
+            frame: BGR frame (used for drawing).
+            rgb_frame: Optional pre-converted RGB frame.
+                       If provided, skips the BGR->RGB conversion.
+        """
+
+        if rgb_frame is None:
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         results = self.face_mesh.process(rgb_frame)
 
         if results.multi_face_landmarks:
 
-            for face_landmarks in results.multi_face_landmarks:
+            face_landmarks = results.multi_face_landmarks[0]
 
+            if self.draw_landmarks:
                 self.mp_drawing.draw_landmarks(
                     image=frame,
                     landmark_list=face_landmarks,
@@ -55,7 +68,8 @@ class FaceMeshDetector:
                     connection_drawing_spec=self.drawing_spec,
                 )
 
-            return frame, results.multi_face_landmarks
+            # Return only the landmark list
+            return frame, face_landmarks.landmark
 
         return frame, None
 

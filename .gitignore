@@ -14,3 +14,15 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Gemini
+.agents/
+
+
+# Private driver biometric data
+data/drivers/*/face.jpg
+data/drivers/*/face_embedding.npy
+data/drivers/*/profile.json
+
+# Test images
+tests/test_face.jpg
